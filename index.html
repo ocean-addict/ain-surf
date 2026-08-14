@@ -1,0 +1,128 @@
+﻿<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Prévisions surf locales à Casablanca et recommandations personnalisées.">
+  <meta name="theme-color" content="#083f48">
+  <meta property="og:title" content="AIN · Prévisions surf à Casablanca">
+  <meta property="og:description" content="Waves, wind, tide et recommandations surf personnalisées pour Casablanca.">
+  <meta property="og:type" content="website">
+  <title>Prévisions surf à Casablanca | AIN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/png" href="images/logo ain circle.png">
+</head>
+<body>
+  <header>
+    <a class="brand-button" href="index.html" aria-label="Accueil AIN">
+      <img class="logo-image" src="images/logo ain circle.png" alt="Logo AIN">
+      <span class="brand-name">AIN</span>
+    </a>
+    <nav aria-label="Navigation principale">
+      <a class="active" href="index.html">Aujourd’hui</a>
+      <a href="spots.html">Spots</a>
+      <a href="profile.html">Pour toi</a>
+    </nav>
+    <div class="header-actions">
+      <span class="live"><i></i> EN DIRECT</span>
+      <a class="account-cta" id="account-cta" href="profile.html">Se connecter / créer un compte</a>
+    </div>
+  </header>
+
+  <main id="home-page" class="page active-page">
+    <section class="hero forecast-hero wrap">
+      <div>
+        <p class="eyebrow" id="today-date">AUJOURD’HUI · CASABLANCA</p>
+        <h1>Prévisions surf<br><em>Casablanca.</em></h1>
+      </div>
+      <div class="weather">
+        <span class="sun" id="weather-icon">◌</span>
+        <div>
+          <strong id="air-temp">--°</strong>
+          <small><span id="weather-text">Mise à jour</span><br>Eau <span id="water-temp">--°</span></small>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap five-day-section">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow" id="forecast-heading-date">MÉTÉO SURF · AIN DIAB</p>
+          <h2 id="forecast-headline">Meilleures conditions surf : vérification...</h2>
+          <p class="forecast-subtitle" id="forecast-subtitle">Chargement du meilleur créneau de waves, wind et tide...</p>
+        </div>
+        <span class="model-label">MISE À JOUR AUTOMATIQUE</span>
+      </div>
+      <div class="five-day-grid" id="five-day">
+        <div class="forecast-loading">Chargement des prévisions...</div>
+      </div>
+      <p class="model-explainer">Le score AIN combine la taille des vagues, la houle, le vent, la marée et les courants selon les préférences de chaque spot. C’est une aide aux prévisions, pas une note objective du surf.</p>
+    </section>
+
+    <section class="wrap featured">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow" id="best-eyebrow">MEILLEUR CHOIX · <span id="data-status">CONNEXION</span></p>
+          <h2 id="best-title">Analyse de la côte...</h2>
+        </div>
+        <div class="best-day-picker" aria-label="Choisir le jour des prévisions">
+          <button type="button" data-best-day-step="-1" aria-label="Jour précédent">‹</button>
+          <input id="best-day-slider" type="range" min="0" max="4" value="0" step="1" aria-label="Jour des prévisions">
+          <button type="button" data-best-day-step="1" aria-label="Jour suivant">›</button>
+          <output id="best-day-label">Aujourd’hui</output>
+        </div>
+        <button class="text-link open-spot" id="best-link" data-spot="pepsi">
+          Prévisions détaillées <span>→</span>
+        </button>
+      </div>
+      <div class="best-card">
+        <div class="score-side">
+          <div class="score-ring"><strong id="best-score">--</strong><span>Score AIN · /100</span></div>
+          <span class="quality okay" id="best-quality">MISE À JOUR</span>
+        </div>
+        <div class="conditions">
+          <div class="condition">
+            <span class="icon">≈</span>
+            <div><small>WAVES</small><strong id="best-waves">-- m</strong><p id="best-swell">-- · --s</p></div>
+          </div>
+          <div class="condition">
+            <span class="icon">↘</span>
+            <div><small>WIND</small><strong id="best-wind">-- km/h</strong><p id="best-wind-detail">--</p></div>
+          </div>
+          <div class="condition">
+            <span class="icon">◒</span>
+            <div><small>TIDE</small><strong id="best-tide">--</strong><p id="best-tide-height">-- m</p></div>
+          </div>
+        </div>
+        <div class="window">
+          <small>BEST WINDOW</small>
+          <strong id="best-window">--:-- <span>—</span> --:--</strong>
+          <p><i></i> Prévision modélisée</p>
+        </div>
+      </div>
+      <div class="local-note"><span>⌁</span><div id="best-note"><strong>Lecture locale</strong> Croisement des données marine avec les règles de chaque spot.</div></div>
+      <p class="safety-disclaimer">AIN propose des recommandations basées sur les prévisions et ne remplace pas ton propre jugement de l’océan ni les conseils locaux. Les conditions peuvent changer rapidement.</p>
+    </section>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/tide-data.js?v=2"></script>
+  <script src="js/tides.js?v=2"></script>
+  <script src="js/home.js"></script>
+  <script src="js/forecast.js?v=2"></script>
+  <script src="js/spots.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/api.js?v=2"></script>
+  <script src="js/app.js"></script>
+  <script src="js/fr.js"></script>
+</body>
+</html>

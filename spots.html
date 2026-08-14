@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Spots de surf à Casablanca et conditions locales">
+  <meta name="theme-color" content="#083f48">
+  <meta property="og:title" content="AIN · Spots de surf à Casablanca">
+  <meta property="og:description" content="Compare les spots de surf de Casablanca avec les conditions en direct.">
+  <meta property="og:type" content="website">
+  <title>Spots de surf à Casablanca | AIN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/png" href="images/logo ain circle.png">
+</head>
+<body>
+  <header>
+    <a class="brand-button" href="index.html" aria-label="Accueil AIN">
+      <img class="logo-image" src="images/logo ain circle.png" alt="Logo AIN">
+      <span class="brand-name">AIN</span>
+    </a>
+    <nav aria-label="Navigation principale">
+      <a href="index.html">Aujourd’hui</a>
+      <a class="active" href="spots.html">Spots</a>
+      <a href="profile.html">Pour toi</a>
+    </nav>
+    <div class="header-actions">
+      <span class="live"><i></i> EN DIRECT</span>
+      <a class="account-cta" id="account-cta" href="profile.html">Se connecter / créer un compte</a>
+    </div>
+  </header>
+
+  <main id="spots-page" class="page active-page">
+    <section class="wrap page-section">
+      <p class="eyebrow">GUIDE SURF DE CASABLANCA</p>
+      <h1 class="page-title">Comparer les spots de Casablanca.</h1>
+      <p class="intro">Choisis un spot selon les conditions du jour, puis ouvre le forecast détaillé.</p>
+      <div class="spot-tabs" id="spot-tabs"></div>
+      <div class="spot-detail-heading">
+        <p class="eyebrow">SPOT SÉLECTIONNÉ</p>
+        <p>Prévisions détaillées et infos locales</p>
+      </div>
+      <div class="detail-card" id="spot-detail"></div>
+      <p class="safety-disclaimer">AIN propose des recommandations basées sur les prévisions et ne remplace pas ton propre jugement de l’océan ni les conseils locaux. Les conditions peuvent changer rapidement.</p>
+    </section>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/tide-data.js?v=2"></script>
+  <script src="js/tides.js?v=2"></script>
+  <script src="js/forecast.js?v=2"></script>
+  <script src="js/spots.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/api.js?v=2"></script>
+  <script src="js/app.js"></script>
+  <script src="js/fr.js"></script>
+</body>
+</html>

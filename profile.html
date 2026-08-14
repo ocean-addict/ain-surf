@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Prévisions surf personnalisées à Casablanca">
+  <meta name="theme-color" content="#083f48">
+  <meta property="og:title" content="AIN · Tes prévisions surf à Casablanca">
+  <meta property="og:description" content="Une recommandation surf basée sur ton niveau, ta board et les conditions.">
+  <meta property="og:type" content="website">
+  <title>Ton forecast | AIN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/png" href="images/logo ain circle.png">
+</head>
+<body>
+  <header>
+    <a class="brand-button" href="index.html" aria-label="Accueil AIN">
+      <img class="logo-image" src="images/logo ain circle.png" alt="Logo AIN">
+      <span class="brand-name">AIN</span>
+    </a>
+    <nav aria-label="Navigation principale">
+      <a href="index.html">Aujourd’hui</a>
+      <a href="spots.html">Spots</a>
+      <a class="active" href="profile.html">Pour toi</a>
+    </nav>
+    <div class="header-actions">
+      <span class="live"><i></i> EN DIRECT</span>
+      <button class="account-cta" id="account-cta" type="button" data-auth-open>Se connecter / créer un compte</button>
+    </div>
+  </header>
+
+  <main id="profile-page" class="page active-page">
+    <section class="wrap page-section profile-page">
+      <div class="profile-main">
+        <p class="eyebrow">TON SURF AUJOURD’HUI</p>
+        <h1 class="page-title">Ta meilleure session.</h1>
+        <p class="intro">Une recommandation claire basée sur les vagues, le vent, la marée et ta configuration.</p>
+        <button class="account-prompt" type="button" data-auth-open>Sauvegarder ton setup sur tous tes appareils →</button>
+        <p class="safety-disclaimer">AIN propose des recommandations basées sur les prévisions et ne remplace pas ton propre jugement de l’océan ni les conseils locaux. Les conditions peuvent changer rapidement.</p>
+        <div class="profile-recommendation" id="your-call"></div>
+        <div class="profile-settings-heading">
+          <p class="eyebrow">TA CONFIGURATION</p>
+          <p>Ajuste ces paramètres une fois : ta recommandation suivra ton profil.</p>
+        </div>
+        <form class="profile-form" id="profile-form">
+          <label>
+            Niveau surf
+            <select id="level">
+              <option value="Beginner">Débutant</option>
+              <option value="Beginner+">Débutant+</option>
+              <option value="Intermediate-">Intermédiaire-</option>
+              <option value="Intermediate">Intermédiaire</option>
+              <option value="Intermediate+">Intermédiaire+</option>
+              <option value="Advanced">Avancé</option>
+              <option value="Expert">Expert</option>
+            </select>
+          </label>
+          <label>
+            Type de board
+            <select id="board">
+              <option>Foam board</option>
+              <option>Longboard</option>
+              <option>Funboard / Malibu</option>
+              <option>Fish</option>
+              <option>Mid-length</option>
+              <option>Shortboard</option>
+              <option>Gun</option>
+            </select>
+          </label>
+          <label>
+            Taille de board
+            <select id="board-size">
+              <option value="Under 6ft">Moins de 6ft</option>
+              <option value="6ft to 6ft6">6ft à 6ft6</option>
+              <option value="6ft6 to 7ft6">6ft6 à 7ft6</option>
+              <option value="7ft6 to 8ft6">7ft6 à 8ft6</option>
+              <option value="Over 8ft6">Plus de 8ft6</option>
+            </select>
+          </label>
+          <label>
+            Taille de wave préférée
+            <select id="wave-size">
+              <option value="Glide: knee to waist">Glide : knee à waist</option>
+              <option value="Waist to chest">Waist à chest</option>
+              <option value="Chest to head-high">Chest à head-high</option>
+              <option value="Head-high to overhead">Head-high à overhead</option>
+              <option value="Overhead and bigger">Overhead et plus</option>
+            </select>
+          </label>
+          <label>
+            À l’aise avec les courants
+            <select id="current-comfort">
+              <option value="Cautious">Prudent</option>
+              <option value="Comfortable">À l’aise</option>
+              <option value="Very comfortable">Très à l’aise</option>
+            </select>
+          </label>
+          <label>
+            Fréquence de surf
+            <select id="surf-frequency">
+              <option value="First sessions">Premières sessions</option>
+              <option value="Occasionally">Occasionnellement</option>
+              <option value="Weekly">Chaque semaine</option>
+              <option value="Several times a week">Plusieurs fois par semaine</option>
+            </select>
+          </label>
+          <button class="primary" id="save-profile" type="submit">Sauvegarder mon profil surf</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div class="account-modal" id="account-modal" hidden>
+    <div class="account-modal-card" role="dialog" aria-modal="true" aria-labelledby="account-title">
+      <button class="modal-close" type="button" data-auth-close aria-label="Fermer la fenêtre du compte">×</button>
+      <p class="eyebrow" id="account-title">TON COMPTE</p>
+      <p id="account-email" class="account-email" hidden></p>
+      <form id="auth-form" class="auth-form">
+        <label>Email<input id="auth-email" type="email" autocomplete="email" required></label>
+        <label>Mot de passe<input id="auth-password" type="password" autocomplete="current-password" minlength="6" required></label>
+          <div class="auth-actions">
+            <button class="primary" type="submit" data-auth-action="signup">Créer un compte</button>
+            <button class="secondary" type="submit" data-auth-action="signin">Se connecter</button>
+          </div>
+        </form>
+        <button class="secondary" id="sign-out" type="button" hidden>Se déconnecter</button>
+      <p id="auth-status" class="auth-status">Connecte-toi pour sauvegarder ton profil sur tous tes appareils.</p>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/tide-data.js?v=2"></script>
+  <script src="js/tides.js?v=2"></script>
+  <script src="js/forecast.js?v=2"></script>
+  <script src="js/spots.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/api.js?v=2"></script>
+  <script src="js/app.js"></script>
+  <script src="js/fr.js"></script>
+</body>
+</html>
