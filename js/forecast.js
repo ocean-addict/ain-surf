@@ -20,13 +20,13 @@ AIN.renderForecastTable = () => {
   if(heading)heading.textContent=`SURF WEATHER · ${spot.name.toUpperCase()} · ${dayLabel(activeDate).toUpperCase()}`;
   AIN.scoreRows={};
   const headline=AIN.$('#forecast-headline'),subtitle=AIN.$('#forecast-subtitle');
-  if(headline){const count=dayBest.score>=85?5:dayBest.score>=70?4:dayBest.score>=55?3:dayBest.score>=40?2:1;headline.innerHTML=`Best surf today: ${dayBest.spot.name} <span class="best-stars">${'★'.repeat(count)}${'☆'.repeat(5-count)}</span>`}
+  if(headline){const count=dayBest.score>=88?5:dayBest.score>=76?4:dayBest.score>=62?3:dayBest.score>=48?2:1;headline.innerHTML=`Best surf today: ${dayBest.spot.name} <span class="best-stars">${'★'.repeat(count)}${'☆'.repeat(5-count)}</span>`}
   if(subtitle)subtitle.textContent=`${dayBest.spot.wave} · ${dayBest.spot.wind} · Créneau idéal ${dayBest.spot.window}`;
   const rows=[6,10,14,18].map(hour=>{
     const index=spot.forecast.time.findIndex(time=>time.startsWith(activeDate)&&Number(time.slice(11,13))===hour);
     if(index<0)return '';
     const modelWave=spot.forecast.wave_height?.[index]??spot.forecast.swell_wave_height?.[index]??0;
-    const score=AIN.scoreHour(spot,index,spot.forecast,spot.weather),quality=AIN.labelFor(score),starCount=score>=85?5:score>=70?4:score>=55?3:score>=40?2:score>=25?1:0;
+    const score=AIN.scoreHour(spot,index,spot.forecast,spot.weather),quality=AIN.labelFor(score),starCount=score>=88?5:score>=76?4:score>=62?3:score>=48?2:score>=28?1:0;
     const stars=Array.from({length:5},(_,star)=>`<span class="forecast-star ${star<starCount?'filled':''}">${star<starCount?'★':'☆'}</span>`).join('');
     const specializedTide=AIN.tideAt(activeDate,hour),tide=specializedTide?.state||AIN.tideState(spot.forecast.sea_level_height_msl,index),tideHeight=specializedTide?.height??spot.forecast.sea_level_height_msl[index];
     const gust=Math.round(spot.weather.wind_gusts_10m?.[index]??spot.weather.wind_speed_10m[index]);

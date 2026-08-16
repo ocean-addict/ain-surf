@@ -46,16 +46,26 @@ AIN.renderBest = () => {
   }
   const dates=[...new Set(firstForecast.time.map(time=>time.slice(0,10)))].slice(0,5);
   AIN.state.bestDay=AIN.clamp(AIN.state.bestDay||0,0,dates.length-1);
+  let signedIn=false;
+  try{signedIn=localStorage.getItem('ain-auth-state')==='signed-in'}catch(error){}
+  const dayTabs=AIN.$('#best-day-tabs');
+  const formatter=new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',timeZone:'Africa/Casablanca'}), dayLabelFor=value=>formatter.format(new Date(`${value}T12:00:00`));
+  if(dayTabs)dayTabs.innerHTML=dates.map((item,index)=>`<button class="forecast-day-tab ${index===AIN.state.bestDay?'active':''}" data-forecast-day="${index}"><strong>${dayLabelFor(item)}</strong></button>`).join('');
+  if(!signedIn){
+    const title=AIN.$('#best-title'),card=AIN.$('.best-card'),note=AIN.$('#best-note'),link=AIN.$('#best-link');
+    if(link)link.hidden=true;
+    if(title)title.textContent='Personnalise ton forecast';
+    if(card)card.innerHTML='<div class="guest-recommendation"><strong>Crée ton profil surf</strong><p>Ajoute ton niveau, ta board et ta préférence de taille de vagues pour recevoir le spot recommandé pour toi.</p><a class="primary" href="profile.html#profile-form">Créer mon profil</a></div>';
+    if(note)note.innerHTML='<strong>Recommandation personnalisée</strong> Connecte-toi pour voir le meilleur spot selon ton profil.';
+    return;
+  }
   const date=dates[AIN.state.bestDay], best=AIN.bestForDate(date);
   if(!best){if(AIN.$('#best-note'))AIN.$('#best-note').innerHTML='<strong>Forecast temporarily unavailable.</strong>';return}
   const i=best.bestIndex, weather=best.weather, marine=best.forecast, code=weather.weather_code?.[i]??0, temperature=weather.temperature_2m?.[i]??0, water=marine.sea_surface_temperature?.[i];
-  const formatter=new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',timeZone:'Africa/Casablanca'}), dayLabel=formatter.format(new Date(`${date}T12:00:00`));
-  const slider=AIN.$('#best-day-slider'), sliderLabel=AIN.$('#best-day-label');
-  if(slider){slider.max=String(dates.length-1);slider.value=String(AIN.state.bestDay)}
-  if(sliderLabel)sliderLabel.textContent=dayLabel;
-  const titleDate=dayLabel.toUpperCase();
-  AIN.$('#best-eyebrow').innerHTML=`BEST PICK · ${titleDate} · <span id="data-status">${AIN.$('#data-status')?.textContent||'LIVE'}</span>`;
+  if(AIN.$('#best-link'))AIN.$('#best-link').hidden=false;
+  const dayLabel=dayLabelFor(date);
   AIN.$('#best-title').textContent=`${best.personalized?'Best pick for YOU':'Best conditions'} · ${best.name}`;
+  AIN.$('#best-title').innerHTML=`${best.personalized?'Best pick for YOU':'Best conditions'} · <span class="best-title-spot">${best.name}</span>`;
   const displayQuality=AIN.labelFor(best.score); AIN.$('#best-score').textContent=best.score;
   const scoreRing=AIN.$('.score-ring');
   if(scoreRing){scoreRing.style.setProperty('--score',best.score);scoreRing.style.setProperty('--ring-color',displayQuality[1]==='good'?'#27a47f':displayQuality[1]==='fun'?'#0b8a9a':displayQuality[1]==='poor'?'#c45d4d':'#c58b22')}

@@ -65,22 +65,16 @@
     <section class="wrap featured">
       <div class="section-heading">
         <div>
-          <p class="eyebrow" id="best-eyebrow">MEILLEUR CHOIX · <span id="data-status">CONNEXION</span></p>
           <h2 id="best-title">Analyse de la côte...</h2>
         </div>
-        <div class="best-day-picker" aria-label="Choisir le jour des prévisions">
-          <button type="button" data-best-day-step="-1" aria-label="Jour précédent">‹</button>
-          <input id="best-day-slider" type="range" min="0" max="4" value="0" step="1" aria-label="Jour des prévisions">
-          <button type="button" data-best-day-step="1" aria-label="Jour suivant">›</button>
-          <output id="best-day-label">Aujourd’hui</output>
-        </div>
+        <div class="forecast-day-tabs best-day-tabs" id="best-day-tabs" aria-label="Choisir le jour des prévisions"></div>
         <button class="text-link open-spot" id="best-link" data-spot="pepsi">
           Prévisions détaillées <span>→</span>
         </button>
       </div>
       <div class="best-card">
         <div class="score-side">
-          <div class="score-ring"><strong id="best-score">--</strong><span>Score AIN · /100</span></div>
+          <div class="score-ring"><strong id="best-score">--</strong><span>Score /100</span></div>
           <span class="quality okay" id="best-quality">MISE À JOUR</span>
         </div>
         <div class="conditions">

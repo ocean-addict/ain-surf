@@ -82,11 +82,14 @@ AIN.spotDetail = spot => {
 
 AIN.renderSpots = () => {
   const selected = AIN.spots.find(spot => spot.id === AIN.state.selectedSpotId) || AIN.spots[0];
+  const date=AIN.spots.find(spot=>spot.forecast?.time)?.forecast?.time?.[0]?.slice(0,10);
+  const recommendation=date&&AIN.recommendationForDate?.(date);
+  const recommendedId=recommendation?.spot?.id||null;
   const homeSpots = AIN.$('#home-spots');
   if(homeSpots) homeSpots.innerHTML = AIN.spots.map(AIN.spotCard).join('');
   AIN.$('#spot-tabs').innerHTML = AIN.spots.map(spot => `
-    <button data-select-spot="${spot.id}" class="spot-compare-card ${spot.id === selected.id ? 'selected' : ''}">
-      <span class="spot-tab-name">${spot.name}</span>
+    <button data-select-spot="${spot.id}" class="spot-compare-card ${spot.id === selected.id ? 'selected' : ''} ${spot.id === recommendedId ? 'recommended' : ''}">
+      <span class="spot-tab-name">${spot.name}</span>${spot.id===recommendedId?'<span class="spot-for-you">Pour toi</span>':''}
       <span class="spot-tab-score"><b>${spot.forecast ? spot.score : '--'}</b><small>/100</small></span>
       <span class="spot-compare-quality">${spot.label}</span>
       <span class="spot-compare-meta">${spot.wave} · ${spot.window === '--' ? '--' : spot.window}</span>

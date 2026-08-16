@@ -55,7 +55,7 @@ AIN.renderProfile=()=>{
   // Prefer conditions that are safe for the surfer; only then use the score.
   const safe=scored.filter(item=>item.levelMatch&&item.currentMatch&&item.frequencyMatch), pool=safe.length?safe:scored;
   pool.sort((a,b)=>b.fitScore-a.fitScore||a.distance-b.distance);
-  const selected=pool[0]||{spot:AIN.spots[0],wave:null,waveMatch:false,boardMatch:false,levelMatch:false,currentMatch:false,frequencyMatch:false,fitScore:0}, spot=selected.spot, score=spot.forecast?Math.round(selected.fitScore):0, count=score>=85?5:score>=70?4:score>=55?3:score>=40?2:0;
+  const selected=pool[0]||{spot:AIN.spots[0],wave:null,waveMatch:false,boardMatch:false,levelMatch:false,currentMatch:false,frequencyMatch:false,fitScore:0}, spot=selected.spot, score=spot.forecast?Math.round(selected.fitScore):0, count=score>=88?5:score>=76?4:score>=62?3:score>=48?2:0;
   AIN.lastRecommendation={...selected,score,preferences};
   const stars='★'.repeat(count)+'☆'.repeat(5-count), breakdown=spot.forecast&&Number.isInteger(spot.bestIndex)?AIN.scoreBreakdown(spot,spot.bestIndex,spot.forecast,spot.weather):null, waveText=spot.wave==='--'?'Checking waves':spot.wave, windText=spot.wind==='--'?'Checking wind':spot.wind, match=selected.waveMatch&&selected.boardMatch&&selected.levelMatch&&selected.currentMatch&&selected.frequencyMatch;
   const wavePreference=waveSize.replace('Glide: ','');

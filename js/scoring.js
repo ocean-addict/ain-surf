@@ -25,8 +25,9 @@ AIN.conditionAt = (spot,index,marine,weather) => {
   let conditionRank=1;
   const currentLimit=spot.currentTolerance ?? .35;
   const shorebreakPenalty=spot.shorebreakRisk ?? (spot.type.includes('shorebreak') ? 1 : 0);
-  if(wave>1 || windGust>24 || period>=11 || currentSpeed>currentLimit || (shorebreakPenalty && (wave>.85 || windSpeed>16)))conditionRank=2;
-  if(wave>1.6 || windGust>32 || period>=14 || currentSpeed>currentLimit*1.5 || spot.danger==='High' || (shorebreakPenalty && (wave>1.25 || windSpeed>22)))conditionRank=3;
+  const onshore=AIN.angleDiff(windDirection,spot.windTarget)>120;
+  if(wave>1 || windGust>24 || period>=11 || currentSpeed>currentLimit || (onshore && windSpeed>15) || (shorebreakPenalty && (wave>.85 || windSpeed>16)))conditionRank=2;
+  if(wave>1.6 || windGust>32 || period>=14 || currentSpeed>currentLimit*1.5 || spot.danger==='High' || (onshore && windSpeed>23) || (shorebreakPenalty && (wave>1.25 || windSpeed>22)))conditionRank=3;
   const defaultLabel=['','Beginner-friendly','Intermediate','Advanced only'][conditionRank];
   const skillLabel=conditionRank===2 && spot.intermediateLabel ? spot.intermediateLabel : defaultLabel;
   return {wave,period,swellDirection,windSpeed,windGust,windDirection,tideState,tideHeight,currentSpeed,currentSource,conditionRank,skillLabel,hour,date};
@@ -42,10 +43,13 @@ AIN.scoreBreakdown = (spot,index,marine,weather) => {
   const periodScore=AIN.clamp((c.period-5)*2.14,0,15);
   const directionScore=AIN.clamp(15-AIN.angleDiff(c.swellDirection,spot.swellTarget)/6,0,15);
   const gustPenalty=Math.max(0,c.windGust-c.windSpeed)*.35;
-  const windScore=AIN.clamp(20-c.windSpeed*.52-AIN.angleDiff(c.windDirection,spot.windTarget)/22-gustPenalty,0,20);
+  const windAlignment=AIN.angleDiff(c.windDirection,spot.windTarget);
+  const onshorePenalty=windAlignment>100 ? AIN.clamp((c.windSpeed-10)*.75,0,10)+AIN.clamp((c.windGust-c.windSpeed)*.2,0,4) : 0;
+  const windScore=AIN.clamp(20-c.windSpeed*.52-windAlignment/22-gustPenalty-onshorePenalty,0,20);
   const tideScore=(spot.tideBias==='rising'&&c.tideState==='Rising')||(spot.tideBias==='mid'&&c.tideState!=='Near turn')?10:5;
   const currentScore=AIN.clamp(10-c.currentSpeed*12,0,10);
-  const total=Math.round(AIN.clamp(waveScore+periodScore+directionScore+windScore+tideScore+currentScore,0,100));
+  const shorebreakPenalty=spot.shorebreakRisk && c.tideState==='Rising' ? AIN.clamp(spot.shorebreakRisk*4,0,4) : 0;
+  const total=Math.round(AIN.clamp(waveScore+periodScore+directionScore+windScore+tideScore+currentScore-shorebreakPenalty,0,100));
   return {total,wave:Math.round(waveScore),wind:Math.round(windScore),swell:Math.round(periodScore+directionScore),tide:tideScore,current:Math.round(currentScore),conditions:c};
 };
 

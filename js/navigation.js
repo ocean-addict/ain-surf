@@ -23,7 +23,7 @@ AIN.bindNavigation = () => {
     if(bestStep){const slider=AIN.$('#best-day-slider');if(slider){slider.value=String(AIN.clamp(Number(slider.value)+Number(bestStep.dataset.bestDayStep),0,Number(slider.max)));AIN.state.bestDay=Number(slider.value);AIN.state.forecastDay=AIN.state.bestDay;AIN.renderBest();AIN.renderForecastTable()}}
     if(scoreRow)AIN.showScoreBreakdown(Number(scoreRow.dataset.scoreRow));
     if(profileScore)AIN.showProfileScore();
-    if(authOpen){const modal=AIN.$('#account-modal');if(modal)modal.hidden=false}
+    if(authOpen){const modal=AIN.$('#account-modal'),card=AIN.$('.account-modal-card'),authForm=AIN.$('#auth-form'),forgotForm=AIN.$('#forgot-form'),resetForm=AIN.$('#reset-form');if(modal)modal.hidden=false;if(card)card.classList.remove('forgot-mode');if(authForm)authForm.hidden=false;if(forgotForm)forgotForm.hidden=true;if(resetForm)resetForm.hidden=true}
     if(authClose){const modal=AIN.$('#account-modal');if(modal)modal.hidden=true}
   });
   document.addEventListener('change',event=>{if(event.target.matches('#forecast-spot')){AIN.state.forecastSpotId=event.target.value;AIN.renderForecastTable()}if(event.target.matches('#best-day-slider')){AIN.state.bestDay=Number(event.target.value);AIN.state.forecastDay=AIN.state.bestDay;AIN.renderBest();AIN.renderForecastTable()}});

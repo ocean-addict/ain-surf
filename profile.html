@@ -117,6 +117,8 @@
     <div class="account-modal-card" role="dialog" aria-modal="true" aria-labelledby="account-title">
       <button class="modal-close" type="button" data-auth-close aria-label="Fermer la fenêtre du compte">×</button>
       <p class="eyebrow" id="account-title">TON COMPTE</p>
+      <h2 class="account-heading">Sauvegarde ton setup</h2>
+      <p class="account-subtitle">Connecte-toi pour retrouver tes préférences et ton forecast personnalisé.</p>
       <p id="account-email" class="account-email" hidden></p>
       <form id="auth-form" class="auth-form">
         <label>Email<input id="auth-email" type="email" autocomplete="email" required></label>
@@ -125,6 +127,17 @@
             <button class="primary" type="submit" data-auth-action="signup">Créer un compte</button>
             <button class="secondary" type="submit" data-auth-action="signin">Se connecter</button>
           </div>
+          <button class="auth-forgot" id="forgot-password" type="button">Mot de passe oublié ?</button>
+        </form>
+        <form id="forgot-form" class="auth-form" hidden>
+          <p class="auth-form-title">Réinitialiser ton mot de passe</p>
+          <label>Email<input id="forgot-email" type="email" autocomplete="email" required></label>
+          <button class="primary" type="submit">Envoyer le lien</button>
+          <button class="auth-back" id="forgot-back" type="button">← Retour à la connexion</button>
+        </form>
+        <form id="reset-form" class="auth-form" hidden>
+          <label>Nouveau mot de passe<input id="reset-password" type="password" minlength="6" autocomplete="new-password" required></label>
+          <button class="primary" type="submit">Enregistrer le nouveau mot de passe</button>
         </form>
         <button class="secondary" id="sign-out" type="button" hidden>Se déconnecter</button>
       <p id="auth-status" class="auth-status">Connecte-toi pour sauvegarder ton profil sur tous tes appareils.</p>

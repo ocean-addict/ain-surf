@@ -18,7 +18,7 @@ AIN.initAuth=async()=>{
   AIN.authClient=window.supabase.createClient(config.SUPABASE_URL,config.SUPABASE_ANON_KEY);
   const {data}=await AIN.authClient.auth.getUser();
   AIN.updateAuthUI(data.user||null);
-  AIN.authClient.auth.onAuthStateChange((_event,session)=>{AIN.updateAuthUI(session?.user||null);if(session?.user)setTimeout(()=>AIN.loadProfileFromAccount(),0)});
+  AIN.authClient.auth.onAuthStateChange((event,session)=>{AIN.updateAuthUI(session?.user||null);if(event==='PASSWORD_RECOVERY'){const reset=AIN.$('#reset-form');if(reset)reset.hidden=false;const form=AIN.$('#auth-form');if(form)form.hidden=true;const modal=AIN.$('#account-modal');if(modal)modal.hidden=false}if(session?.user)setTimeout(()=>AIN.loadProfileFromAccount(),0)});
   if(data.user)await AIN.loadProfileFromAccount();
 };
 
@@ -72,7 +72,7 @@ AIN.loadProfileFromAccount=async()=>{
 };
 
 AIN.bindAuth=()=>{
-  const authForm=AIN.$('#auth-form'),signOut=AIN.$('#sign-out');
+  const authForm=AIN.$('#auth-form'),forgotForm=AIN.$('#forgot-form'),signOut=AIN.$('#sign-out'),forgot=AIN.$('#forgot-password'),forgotBack=AIN.$('#forgot-back'),resetForm=AIN.$('#reset-form');
   authForm?.addEventListener('submit',async event=>{
     event.preventDefault();
     const email=AIN.$('#auth-email').value.trim(),password=AIN.$('#auth-password').value,status=AIN.$('#auth-status');
@@ -82,7 +82,39 @@ AIN.bindAuth=()=>{
     const redirectTo=new URL('profile.html',window.location.href).href;
     const result=action==='signin'?await AIN.authClient.auth.signInWithPassword({email,password}):await AIN.authClient.auth.signUp({email,password,options:{emailRedirectTo:redirectTo}});
     if(result.error){if(status)status.textContent=result.error.message;return}
-    if(status)status.textContent=action==='signin'?'Signed in. Check your profile below.':'Account created. Check your email to confirm it.';
+    if(action==='signup'&&result.data?.user?.identities?.length===0){if(status)status.textContent='Un compte existe déjà avec cet email. Connecte-toi plutôt que de recréer un compte.';return}
+    if(status)status.textContent=action==='signin'?'Connecté. Vérifie ton profil ci-dessous.':'Compte créé. Vérifie ton email pour confirmer.';
+  });
+  forgot?.addEventListener('click',async()=>{
+    const emailInput=AIN.$('#forgot-email'),authEmail=AIN.$('#auth-email');
+    const card=AIN.$('.account-modal-card');
+    if(emailInput&&authEmail)emailInput.value=authEmail.value;
+    if(authForm)authForm.hidden=true;
+    if(forgotForm)forgotForm.hidden=false;
+    card?.classList.add('forgot-mode');
+    emailInput?.focus();
+  });
+  forgotBack?.addEventListener('click',()=>{
+    const card=AIN.$('.account-modal-card');
+    if(forgotForm)forgotForm.hidden=true;
+    if(authForm)authForm.hidden=false;
+    card?.classList.remove('forgot-mode');
+  });
+  forgotForm?.addEventListener('submit',async event=>{
+    event.preventDefault();
+    const email=AIN.$('#forgot-email')?.value.trim(),status=AIN.$('#auth-status');
+    if(!AIN.authClient){if(status)status.textContent='Supabase n’est pas configuré dans js/config.js.';return}
+    const redirectTo=new URL('profile.html',window.location.href).href;
+    const {error}=await AIN.authClient.auth.resetPasswordForEmail(email,{redirectTo});
+    if(status)status.textContent=error?`Impossible d’envoyer le lien : ${error.message}`:'Un lien de réinitialisation a été envoyé à ton email.';
+    if(!error&&forgotForm)forgotForm.hidden=true;
+  });
+  resetForm?.addEventListener('submit',async event=>{
+    event.preventDefault();
+    const password=AIN.$('#reset-password')?.value,status=AIN.$('#auth-status');
+    const {error}=await AIN.authClient.auth.updateUser({password});
+    if(status)status.textContent=error?`Impossible de modifier le mot de passe : ${error.message}`:'Mot de passe mis à jour. Tu peux maintenant te connecter.';
+    if(!error){resetForm.hidden=true;await AIN.authClient.auth.signOut()}
   });
   signOut?.addEventListener('click',async()=>{await AIN.authClient?.auth.signOut()});
 };
