@@ -9,7 +9,6 @@ AIN.boardFit=(type,size,wave)=>{
   if(size==='Over 8ft6')range=[range[0],Math.min(range[1],1.5)];
   return wave>=range[0]&&wave<=range[1];
 };
-
 AIN.profilePreferences=()=>{
   let saved={};
   try{saved=JSON.parse(localStorage.getItem('ain-profile')||'{}')}catch(error){saved={}}

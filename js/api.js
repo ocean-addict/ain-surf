@@ -18,7 +18,14 @@ AIN.loadLiveForecast = async () => {
       AIN.applyForecast(spot,marineHourly,weatherHourly);
     });
     await tideRequest;
-    if(AIN.$('#spot-tabs'))AIN.renderSpots(); AIN.renderProfile(); if(AIN.$('#five-day')){AIN.renderBest();AIN.renderForecastTable();AIN.$('#data-status').textContent=AIN.tides?'EN DIRECT · TIDES LOCALES':'EN DIRECT · ESTIMATION TIDE'}
+    if(AIN.$('#spot-tabs'))AIN.renderSpots();
+    AIN.renderProfile();
+    if(AIN.$('#five-day')){
+      AIN.renderBest();
+      AIN.renderForecastTable();
+      const status=AIN.$('#data-status');
+      if(status)status.textContent=AIN.tides?'EN DIRECT · TIDES LOCALES':'EN DIRECT · ESTIMATION TIDE';
+    }
   } catch(error) {
     if(AIN.$('#data-status'))AIN.$('#data-status').textContent='HORS LIGNE'; if(AIN.$('#best-note'))AIN.$('#best-note').innerHTML='<strong>Prévisions indisponibles</strong> Aucune condition d’exemple n’est affichée comme donnée en direct.'; console.error(error);
   }
