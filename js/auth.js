@@ -34,7 +34,7 @@ AIN.initAuth=async()=>{
   const {data}=await AIN.authClient.auth.getUser();
   AIN.updateAuthUI(data.user||null);
   AIN.authClient.auth.onAuthStateChange((event,session)=>{AIN.updateAuthUI(session?.user||null);if(event==='PASSWORD_RECOVERY')AIN.showPasswordReset();if(session?.user)setTimeout(()=>AIN.loadProfileFromAccount(),0)});
-  if(window.location.hash.includes('type=recovery')){
+  if(window.location.hash.includes('type=recovery')||new URLSearchParams(window.location.search).get('reset')==='1'){
     AIN.showPasswordReset();
   }
   if(data.user)await AIN.loadProfileFromAccount();
@@ -123,7 +123,7 @@ AIN.bindAuth=()=>{
     event.preventDefault();
     const email=AIN.$('#forgot-email')?.value.trim(),status=AIN.$('#auth-status');
     if(!AIN.authClient){if(status)status.textContent='Supabase n’est pas configuré dans js/config.js.';return}
-    const redirectTo=new URL('profile.html',window.location.href).href;
+    const redirectTo=new URL('profile.html?reset=1',window.location.href).href;
     const {error}=await AIN.authClient.auth.resetPasswordForEmail(email,{redirectTo});
     if(error){
       console.error('Password recovery error',error);
