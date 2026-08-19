@@ -59,7 +59,7 @@ AIN.showScoreBreakdown = hour => {
   if(!row||!panel)return;
   const parts=AIN.scoreBreakdown(row.spot,row.index,row.spot.forecast,row.spot.weather);
   panel.hidden=false;
-  panel.innerHTML=`<strong>Score modèle AIN : ${parts.total}/100</strong><span>Hauteur des vagues <b>+${parts.wave}</b></span><span>Vent et rafales <b>+${parts.wind}</b></span><span>Direction et période de la houle <b>+${parts.swell}</b></span><span>Marée <b>+${parts.tide}</b></span><span>Courant <b>+${parts.current}</b> <small>(${parts.conditions.currentSource})</small></span><span>Niveau requis <b>${parts.conditions.skillLabel}</b></span>`;
+  panel.innerHTML=`<strong>Score : ${parts.total}/100</strong><span>Hauteur des vagues <b>+${parts.wave}</b></span><span>Vent et rafales <b>+${parts.wind}</b></span><span>Direction et période de la houle <b>+${parts.swell}</b></span><span>Marée <b>+${parts.tide}</b></span><span>Courant <b>+${parts.current}</b> <small>(${parts.conditions.currentSource})</small></span><span>Niveau requis <b>${parts.conditions.skillLabel}</b></span>`;
 };
 
 AIN.drawTideChart = (points,date) => {

@@ -25,6 +25,12 @@ AIN.initAuth=async()=>{
     return;
   }
   AIN.authClient=window.supabase.createClient(config.SUPABASE_URL,config.SUPABASE_ANON_KEY);
+  const recoveryCode=new URLSearchParams(window.location.search).get('code');
+  if(recoveryCode){
+    const {error}=await AIN.authClient.auth.exchangeCodeForSession(recoveryCode);
+    if(!error)AIN.showPasswordReset();
+    else if(status)status.textContent='Le lien de réinitialisation est invalide ou expiré.';
+  }
   const {data}=await AIN.authClient.auth.getUser();
   AIN.updateAuthUI(data.user||null);
   AIN.authClient.auth.onAuthStateChange((event,session)=>{AIN.updateAuthUI(session?.user||null);if(event==='PASSWORD_RECOVERY')AIN.showPasswordReset();if(session?.user)setTimeout(()=>AIN.loadProfileFromAccount(),0)});
