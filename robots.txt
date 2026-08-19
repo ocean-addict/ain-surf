@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ocean-addict.github.io/ain-surf/sitemap.xml
