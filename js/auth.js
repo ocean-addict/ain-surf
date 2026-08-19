@@ -1,5 +1,14 @@
 AIN.authClient=null;
 
+AIN.showPasswordReset=()=>{
+  const reset=AIN.$('#reset-form'),form=AIN.$('#auth-form'),forgot=AIN.$('#forgot-form'),modal=AIN.$('#account-modal');
+  if(reset)reset.hidden=false;
+  if(form)form.hidden=true;
+  if(forgot)forgot.hidden=true;
+  if(modal)modal.hidden=false;
+  AIN.$('#reset-password')?.focus();
+};
+
 AIN.updateHeaderAuthState=user=>{
   const button=AIN.$('#account-cta');
   if(!button)return;
@@ -18,7 +27,10 @@ AIN.initAuth=async()=>{
   AIN.authClient=window.supabase.createClient(config.SUPABASE_URL,config.SUPABASE_ANON_KEY);
   const {data}=await AIN.authClient.auth.getUser();
   AIN.updateAuthUI(data.user||null);
-  AIN.authClient.auth.onAuthStateChange((event,session)=>{AIN.updateAuthUI(session?.user||null);if(event==='PASSWORD_RECOVERY'){const reset=AIN.$('#reset-form');if(reset)reset.hidden=false;const form=AIN.$('#auth-form');if(form)form.hidden=true;const modal=AIN.$('#account-modal');if(modal)modal.hidden=false}if(session?.user)setTimeout(()=>AIN.loadProfileFromAccount(),0)});
+  AIN.authClient.auth.onAuthStateChange((event,session)=>{AIN.updateAuthUI(session?.user||null);if(event==='PASSWORD_RECOVERY')AIN.showPasswordReset();if(session?.user)setTimeout(()=>AIN.loadProfileFromAccount(),0)});
+  if(window.location.hash.includes('type=recovery')){
+    AIN.showPasswordReset();
+  }
   if(data.user)await AIN.loadProfileFromAccount();
 };
 
@@ -119,9 +131,10 @@ AIN.bindAuth=()=>{
   resetForm?.addEventListener('submit',async event=>{
     event.preventDefault();
     const password=AIN.$('#reset-password')?.value,status=AIN.$('#auth-status');
+    if(!AIN.authClient){if(status)status.textContent='Supabase n’est pas configuré.';return}
     const {error}=await AIN.authClient.auth.updateUser({password});
     if(status)status.textContent=error?`Impossible de modifier le mot de passe : ${error.message}`:'Mot de passe mis à jour. Tu peux maintenant te connecter.';
-    if(!error){resetForm.hidden=true;await AIN.authClient.auth.signOut()}
+    if(!error){resetForm.hidden=true;history.replaceState({},document.title,window.location.pathname);await AIN.authClient.auth.signOut()}
   });
   signOut?.addEventListener('click',async()=>{await AIN.authClient?.auth.signOut()});
 };
