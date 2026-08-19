@@ -30,6 +30,7 @@ AIN.spotDetail = spot => {
     : '--';
   const bestDate = marine?.time?.[start]?.slice(0,10);
   const bestHour = Number(marine?.time?.[start]?.slice(11,13));
+  const breakdown = marine && spot.weather && Number.isInteger(start) ? AIN.scoreBreakdown(spot,start,marine,spot.weather) : null;
   const specializedTide = bestDate ? AIN.tideAt(bestDate,bestHour) : null;
   const displayedTide = specializedTide || {
     state: spot.tideState,
@@ -77,7 +78,10 @@ AIN.spotDetail = spot => {
       <div><small>USUAL CROWD</small><b>${spot.crowd}</b></div>
       <div><small>DANGER BASELINE</small><b>${spot.danger}</b></div>
     </div>
-    <div class="local-note large"><span>⌁</span><p><strong>Note locale</strong>${spot.note}</p></div>`;
+    <div class="local-note large"><span>⌁</span><p><strong>Note locale</strong>${spot.note}</p></div>
+    <section class="spot-why"><span class="eyebrow">DÉCISION AIN</span><h3>Pourquoi ce spot aujourd’hui&nbsp;?</h3><ul class="why-list">${breakdown ? `<li class="${breakdown.conditions.windSpeed <= 15 ? 'positive' : 'caution'}">${breakdown.conditions.windSpeed <= 15 ? '✓ Vent léger' : '△ Vent à surveiller'} · ${Math.round(breakdown.conditions.windSpeed)} km/h, rafales ${gust} km/h</li><li class="${breakdown.conditions.period >= 8 ? 'positive' : 'caution'}">${breakdown.conditions.period >= 8 ? '✓ Période suffisante' : '△ Période courte'} · ${Math.round(breakdown.conditions.period)}s</li><li class="${breakdown.wave >= 20 ? 'positive' : 'caution'}">${breakdown.wave >= 20 ? '✓ Taille cohérente' : '△ Taille moins adaptée'} · ${spot.wave}</li><li class="${breakdown.conditions.currentSpeed <= (spot.currentTolerance || .35) ? 'positive' : 'caution'}">${breakdown.conditions.currentSpeed <= (spot.currentTolerance || .35) ? '✓ Courant dans la limite du spot' : '△ Courant à surveiller'} · ${breakdown.conditions.currentSource}</li>` : '<li>Analyse en cours dès que les prévisions sont disponibles.</li>'}</ul></section>
+    <section class="spot-guide"><span class="eyebrow">GUIDE DU SPOT</span><h3>À propos de ${spot.name}</h3><div class="spot-guide-grid"><div><small>TYPE DE VAGUE</small><b>${spot.type}</b></div><div><small>MEILLEURES CONDITIONS</small><b>Houle ${spot.direction || 'favorable'} · marée ${spot.tideState || 'à vérifier'}</b></div><div><small>NIVEAU</small><b>${spot.level}</b></div><div><small>À SAVOIR</small><b>${spot.crowd} · danger de base ${spot.danger}</b></div></div><div class="who-spot"><h3>Pour qui&nbsp;?</h3><p><strong>Débutant</strong> · ${spot.conditionRank === 1 ? 'Possible dans les conditions actuelles, avec prudence.' : 'À privilégier seulement si les vagues, le vent et le courant restent calmes.'}</p><p><strong>Intermédiaire</strong> · Spot généralement exploitable quand les conditions restent propres.</p><p><strong>Avancé</strong> · Le niveau requis augmente avec la taille, le shorebreak et le courant.</p></div></section>
+    ${spot.localSchool ? `<section class="local-school" aria-labelledby="school-title"><span class="eyebrow">À ANFAPLACE</span><h3 id="school-title">Envie d’apprendre à surfer&nbsp;?</h3><strong>${spot.localSchool.name}</strong><p>${spot.localSchool.description}</p><div class="school-highlights"><span>${spot.localSchool.courses}</span><span>${spot.localSchool.rental}</span><span>${spot.localSchool.languages}</span></div><div class="school-details"><b>${spot.localSchool.prices}</b><span>${spot.localSchool.flexible}</span><span>${spot.localSchool.booking}</span><span>${spot.localSchool.pack}</span></div><div class="school-location"><div class="location-pin">⌖</div><div><b>3 Shari’ Al-Kourneesh</b><span>Casablanca, Casablanca-Settat</span></div></div><div class="school-actions"><a class="school-cta" data-partner="anfa-surf-school" href="https://wa.me/${spot.localSchool.whatsapp}?text=Bonjour%20Anfa%20Surf%20School%2C%20je%20viens%20de%20AIN%20et%20je%20voudrais%20conna%C3%AEtre%20les%20disponibilit%C3%A9s%20pour%20un%20cours%20%C3%A0%20Anfaplace." target="_blank" rel="noopener">Écrire sur WhatsApp</a><a class="school-phone" data-partner="anfa-surf-school" href="tel:${spot.localSchool.phone}">Appeler · ${spot.localSchool.phone}</a><a class="school-map" data-partner="anfa-surf-school" href="${spot.localSchool.mapsUrl}" target="_blank" rel="noopener">Itinéraire Google Maps</a><a class="school-map" data-partner="anfa-surf-school" href="${spot.localSchool.wazeUrl}" target="_blank" rel="noopener">Ouvrir dans Waze</a></div><small>${spot.localSchool.location} · Informations indépendantes du score AIN.</small></section>` : ''}`;
 };
 
 AIN.renderSpots = () => {
@@ -88,11 +92,29 @@ AIN.renderSpots = () => {
   const homeSpots = AIN.$('#home-spots');
   if(homeSpots) homeSpots.innerHTML = AIN.spots.map(AIN.spotCard).join('');
   AIN.$('#spot-tabs').innerHTML = AIN.spots.map(spot => `
-    <button data-select-spot="${spot.id}" class="spot-compare-card ${spot.id === selected.id ? 'selected' : ''} ${spot.id === recommendedId ? 'recommended' : ''}">
-      <span class="spot-tab-name">${spot.name}</span>${spot.id===recommendedId?'<span class="spot-for-you">Pour toi</span>':''}
+    <button data-select-spot="${spot.id}" class="spot-compare-card ${spot.id === selected.id ? 'selected' : ''} ${spot.id === recommendedId ? 'recommended' : ''} ${spot.id === 'pepsi' ? 'school-spot-card' : ''}">
+      <span class="spot-tab-name">${spot.name}</span>${spot.id==='pepsi'?'<span class="spot-school-badge">★ Club surf</span>':''}${spot.id===recommendedId?'<span class="spot-for-you">Pour toi</span>':''}
       <span class="spot-tab-score"><b>${spot.forecast ? spot.score : '--'}</b><small>/100</small></span>
       <span class="spot-compare-quality">${spot.label}</span>
       <span class="spot-compare-meta">${spot.wave} · ${spot.window === '--' ? '--' : spot.window}</span>
     </button>`).join('');
   AIN.$('#spot-detail').innerHTML = AIN.spotDetail(selected);
+  const school=AIN.$('#spot-detail .local-school'), schoolData=selected.localSchool;
+  if(school&&schoolData?.coordinates){
+    school.querySelector('.school-location')?.remove();
+    const photo=document.createElement('img');
+    photo.className='school-photo';
+    photo.src='images/anfa surf school rip.jpg';
+    photo.alt='Anfa Surf School à Anfaplace';
+    photo.loading='lazy';
+    const preview=document.createElement('div');
+    preview.className='school-map-preview';
+    preview.innerHTML=`<iframe src="https://www.google.com/maps?q=${schoolData.coordinates}&z=16&output=embed" loading="lazy" title="Localisation de ${schoolData.name}" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+    const visuals=document.createElement('div');
+    visuals.className='school-visuals';
+    visuals.append(photo,preview);
+    school.querySelector('.school-actions')?.before(visuals);
+    const chart=AIN.$('#spot-detail .chart');
+    if(chart)chart.before(school);
+  }
 };

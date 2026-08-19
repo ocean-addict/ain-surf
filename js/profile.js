@@ -29,12 +29,13 @@ AIN.recommendationForDate=(date)=>{
     if(!spot.forecast?.time||!spot.weather)return null;
     const hours=spot.forecast.time.map((time,index)=>({time,index,hour:Number(time.slice(11,13))})).filter(item=>item.time.startsWith(date)&&item.hour>=6&&item.hour<=20);
     if(!hours.length)return null;
-    const best=hours.map(item=>({...item,score:AIN.scoreHour(spot,item.index,spot.forecast,spot.weather)})).sort((a,b)=>b.score-a.score)[0];
+    const rolling=AIN.bestRollingWindow(hours,index=>AIN.scoreHour(spot,index,spot.forecast,spot.weather));
+    const best={...hours.find(item=>item.index===rolling?.peakIndex)||hours[0],score:Math.round(rolling?.peak??0),window:AIN.formatWindow(rolling)};
     const c=AIN.conditionAt(spot,best.index,spot.forecast,spot.weather), wave=c.wave;
     const waveMatch=wave>=preferredLow&&wave<=preferredHigh, boardMatch=AIN.boardFit(preferences.boardType,preferences.boardSize,wave), levelMatch=c.conditionRank<=userRank, currentMatch=c.currentSpeed<=currentLimit, frequencyMatch=preferences.frequency!=='First sessions'||c.conditionRank===1;
     const distance=wave<preferredLow?preferredLow-wave:wave>preferredHigh?wave-preferredHigh:0, waveFit=waveMatch?1:AIN.clamp(1-distance/1.2,0,1);
     const fitScore=AIN.clamp(best.score*.55+waveFit*20+(boardMatch?15:0)+(levelMatch?10:0)+(currentMatch?10:0)+(frequencyMatch?5:-15),0,100);
-    return {spot,c,wave,waveMatch,boardMatch,levelMatch,currentMatch,frequencyMatch,fitScore,distance,index:best.index,score:Math.round(fitScore),preferences};
+    return {spot,c,wave,waveMatch,boardMatch,levelMatch,currentMatch,frequencyMatch,fitScore,distance,index:best.index,score:Math.round(fitScore),window:best.window,preferences};
   }).filter(Boolean);
   if(!scored.length)return null;
   const safe=scored.filter(item=>item.levelMatch&&item.currentMatch&&item.frequencyMatch), pool=safe.length?safe:scored;

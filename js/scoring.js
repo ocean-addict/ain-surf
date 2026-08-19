@@ -55,13 +55,36 @@ AIN.scoreBreakdown = (spot,index,marine,weather) => {
 
 AIN.scoreHour=(spot,index,marine,weather)=>AIN.scoreBreakdown(spot,index,marine,weather).total;
 
+/* Evaluate a real contiguous window from hourly scores. */
+AIN.hoursForDate=(marine,date)=>marine?.time?.map((time,index)=>({
+  time,index,hour:Number(time.slice(11,13)),date:time.slice(0,10)
+})).filter(item=>item.date===date&&item.hour>=6&&item.hour<=21).sort((a,b)=>a.hour-b.hour)||[];
+
+AIN.bestRollingWindow=(hours,scoreForIndex,windowSize=3)=>{
+  if(!hours.length)return null;
+  const candidates=[];
+  for(let start=0;start<=hours.length-windowSize;start++){
+    const window=hours.slice(start,start+windowSize);
+    if(window.some((item,index)=>index&&item.hour-window[index-1].hour>1))continue;
+    const scores=window.map(item=>scoreForIndex(item.index));
+    const average=scores.reduce((sum,value)=>sum+value,0)/scores.length;
+    const peakOffset=scores.indexOf(Math.max(...scores));
+    candidates.push({startHour:window[0].hour,endHour:window.at(-1).hour+1,startIndex:window[0].index,peakIndex:window[peakOffset].index,peakHour:window[peakOffset].hour,average,peak:Math.max(...scores),scores});
+  }
+  return candidates.sort((a,b)=>b.average-a.average||b.peak-a.peak)[0]||{
+    startHour:hours[0].hour,endHour:hours[0].hour+1,startIndex:hours[0].index,peakIndex:hours[0].index,peakHour:hours[0].hour,average:scoreForIndex(hours[0].index),peak:scoreForIndex(hours[0].index),scores:[scoreForIndex(hours[0].index)]
+  };
+};
+
+AIN.formatWindow=window=>window?`${String(window.startHour).padStart(2,'0')}:00–${String(window.endHour).padStart(2,'0')}:00`:'';
+
 AIN.applyForecast=(spot,marine,weather)=>{
-  const date=marine.time[0].slice(0,10), hours=[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
-  const candidates=marine.time.map((time,index)=>({index,hour:Number(time.slice(11,13)),date:time.slice(0,10)})).filter(item=>item.date===date&&hours.includes(item.hour)).map(item=>({...item,score:AIN.scoreHour(spot,item.index,marine,weather)})).sort((a,b)=>b.score-a.score);
-  const best=candidates[0]||{index:0,hour:6,score:0}, i=best.index, c=AIN.conditionAt(spot,i,marine,weather);
-  spot.score=best.score; spot.wave=`${(c.wave*.85).toFixed(1)} m – ${(c.wave*1.2).toFixed(1)} m`; spot.period=Math.round(c.period); spot.direction=AIN.compass(c.swellDirection);
+  const date=marine.time[0].slice(0,10), hours=[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+  const candidates=marine.time.map((time,index)=>({index,hour:Number(time.slice(11,13)),date:time.slice(0,10)})).filter(item=>item.date===date&&hours.includes(item.hour));
+  const bestWindow=AIN.bestRollingWindow(candidates,index=>AIN.scoreHour(spot,index,marine,weather));
+  const i=bestWindow?.peakIndex??candidates[0]?.index??0, c=AIN.conditionAt(spot,i,marine,weather);
+  spot.score=Math.round(bestWindow?.peak??0); spot.window=AIN.formatWindow(bestWindow); spot.wave=`${(c.wave*.85).toFixed(1)} m – ${(c.wave*1.2).toFixed(1)} m`; spot.period=Math.round(c.period); spot.direction=AIN.compass(c.swellDirection);
   spot.windSpeed=Math.round(c.windSpeed); spot.windGust=Math.round(c.windGust); spot.windDirection=AIN.compass(c.windDirection); spot.wind=`${spot.windSpeed} km/h ${spot.windDirection}`;
   spot.tideState=c.tideState; spot.tide=Number.isFinite(c.tideHeight)?`${c.tideState} · ${c.tideHeight.toFixed(2)} m`:'Unavailable'; spot.currentSpeed=c.currentSpeed; spot.currentSource=c.currentSource; spot.currentDirection=marine.ocean_current_direction?.[i];
-  const windowStart=Math.max(6,best.hour-1),windowEnd=Math.min(21,best.hour+2); spot.window=`${String(windowStart).padStart(2,'0')}:00–${String(windowEnd).padStart(2,'0')}:00`;
   [spot.label,spot.tone]=AIN.labelFor(spot.score); spot.conditionRank=c.conditionRank; spot.skillLabel=c.skillLabel; spot.forecast=marine; spot.weather=weather; spot.bestIndex=i;
 };

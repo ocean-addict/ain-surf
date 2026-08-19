@@ -8,7 +8,7 @@ AIN.renderForecastTable = () => {
   AIN.state.forecastDay=AIN.clamp(AIN.state.forecastDay,0,dates.length-1);
   const activeDate=dates[AIN.state.forecastDay], formatter=new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',timeZone:'Africa/Casablanca'});
   const dayLabel=date=>formatter.format(new Date(`${date}T12:00:00`)); let dayBest=null;
-  AIN.spots.forEach(spot=>spot.forecast?.time?.forEach((time,index)=>{const hour=Number(time.slice(11,13));if(time.startsWith(activeDate)&&[6,10,14,18].includes(hour)){const score=AIN.scoreHour(spot,index,spot.forecast,spot.weather);if(!dayBest||score>dayBest.score)dayBest={spot,index,score}}}));
+  AIN.spots.forEach(spot=>spot.forecast?.time?.forEach((time,index)=>{const hour=Number(time.slice(11,13));if(time.startsWith(activeDate)&&[6,9,12,15,18,21].includes(hour)){const score=AIN.scoreHour(spot,index,spot.forecast,spot.weather);if(!dayBest||score>dayBest.score)dayBest={spot,index,score}}}));
   if(!dayBest){
     const container=AIN.$('#five-day');
     if(container)container.innerHTML='<div class="forecast-error">Forecast temporarily unavailable for this date.</div>';
@@ -22,7 +22,7 @@ AIN.renderForecastTable = () => {
   const headline=AIN.$('#forecast-headline'),subtitle=AIN.$('#forecast-subtitle');
   if(headline){const count=dayBest.score>=88?5:dayBest.score>=76?4:dayBest.score>=62?3:dayBest.score>=48?2:1;headline.innerHTML=`Best surf today: ${dayBest.spot.name} <span class="best-stars">${'★'.repeat(count)}${'☆'.repeat(5-count)}</span>`}
   if(subtitle)subtitle.textContent=`${dayBest.spot.wave} · ${dayBest.spot.wind} · Créneau idéal ${dayBest.spot.window}`;
-  const rows=[6,10,14,18].map(hour=>{
+  const rows=[6,9,12,15,18,21].map(hour=>{
     const index=spot.forecast.time.findIndex(time=>time.startsWith(activeDate)&&Number(time.slice(11,13))===hour);
     if(index<0)return '';
     const modelWave=spot.forecast.wave_height?.[index]??spot.forecast.swell_wave_height?.[index]??0;

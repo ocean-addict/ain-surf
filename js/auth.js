@@ -69,6 +69,7 @@ AIN.loadProfileFromAccount=async()=>{
   };
   Object.entries(fields).forEach(([selector,value])=>{const field=AIN.$(selector);if(field&&value&&[...field.options].some(option=>option.value===value))field.value=value});
   AIN.renderProfile?.();
+  if(AIN.$('#five-day'))AIN.renderBest?.();
 };
 
 AIN.bindAuth=()=>{
@@ -106,7 +107,13 @@ AIN.bindAuth=()=>{
     if(!AIN.authClient){if(status)status.textContent='Supabase n’est pas configuré dans js/config.js.';return}
     const redirectTo=new URL('profile.html',window.location.href).href;
     const {error}=await AIN.authClient.auth.resetPasswordForEmail(email,{redirectTo});
-    if(status)status.textContent=error?`Impossible d’envoyer le lien : ${error.message}`:'Un lien de réinitialisation a été envoyé à ton email.';
+    if(error){
+      console.error('Password recovery error',error);
+      const detail=[error.message,error.code,error.status].filter(Boolean).join(' · ');
+      if(status)status.textContent=`Impossible d’envoyer le lien : ${detail}`;
+    }else if(status){
+      status.textContent='Un lien de réinitialisation a été envoyé à ton email.';
+    }
     if(!error&&forgotForm)forgotForm.hidden=true;
   });
   resetForm?.addEventListener('submit',async event=>{

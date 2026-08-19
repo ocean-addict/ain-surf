@@ -7,4 +7,24 @@ AIN.spots = [
   {id:'jack-beach',name:'Jack Beach — Dar Bouazza',area:'Dar Bouazza · 33.526°N, 7.818°W',lat:33.526,lng:-7.818,score:0,wave:'--',period:0,wind:'--',tide:'--',window:'--',label:'Updating',tone:'okay',level:'Intermediate–advanced',direction:'--',crowd:'Light–moderate',danger:'Moderate',type:'Beach break exposé',note:'Option plus large à Dar Bouazza quand les spots du centre de Casablanca ne fonctionnent pas. Plus exposé, avec des courants plus forts et des conditions plus variables.',ideal:[0.9,2.2],swellTarget:290,windTarget:100,tideBias:'mid',power:1.08,currentTolerance:.32,shorebreakRisk:.45}
 ];
 
+// Local information is kept separate from forecast/scoring data.
+const anfaPlace=AIN.spots.find(spot=>spot.id==='pepsi');
+if(anfaPlace)anfaPlace.localSchool={
+  name:'Anfa Surf School',
+  location:'3 Shari’ Al-Kourneesh, Casablanca',
+  coordinates:'33.599125,-7.666945',
+  mapsUrl:'https://www.google.com/maps/search/?api=1&query=33.599125,-7.666945',
+  wazeUrl:'https://www.waze.com/ul?ll=33.599125%2C-7.666945&navigate=yes',
+  description:'Cours de surf et coaching à Anfaplace pour enfants et adultes, avec possibilité de réserver ou de passer directement au club.',
+  phone:'+212668289148',
+  whatsapp:'212668289148',
+  languages:'Français · English · العربية',
+  courses:'Cours débutant, cours privé et coaching en groupe',
+  rental:'Location board + wetsuit',
+  prices:'Location : 100 DH · Cours avec coach : 150 DH',
+  booking:'Réservation possible ou paiement sur place',
+  flexible:'Cours disponibles pendant les heures d’ouverture',
+  pack:'Carnet de 10 cours disponible'
+};
+
 AIN.state = { selectedSpotId:'pepsi', forecastDay:0, forecastSpotId:null, bestDay:0 };
