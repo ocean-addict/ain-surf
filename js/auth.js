@@ -63,7 +63,7 @@ AIN.saveProfileToAccount=async()=>{
   if(!AIN.authClient)return false;
   const {data:{user}}=await AIN.authClient.auth.getUser();
   if(!user)return false;
-  const profile={id:user.id,surf_level:AIN.$('#level')?.value,board_type:AIN.$('#board')?.value,board_size:AIN.$('#board-size')?.value,wave_size:AIN.$('#wave-size')?.value,current_comfort:AIN.$('#current-comfort')?.value,favorite_spot:AIN.$('#favorite-spot')?.value,surf_frequency:AIN.$('#surf-frequency')?.value,updated_at:new Date().toISOString()};
+  const profile={id:user.id,surf_level:AIN.$('#level')?.value,board_type:AIN.$('#board')?.value,board_ownership:AIN.$('#board-ownership')?.value,board_size:AIN.$('#board-size')?.value,wave_size:AIN.$('#wave-size')?.value,current_comfort:AIN.$('#current-comfort')?.value,favorite_spot:AIN.$('#favorite-spot')?.value,surf_frequency:AIN.$('#surf-frequency')?.value,updated_at:new Date().toISOString()};
   const {error}=await AIN.authClient.from('profiles').upsert(profile);
   if(error)throw error;
   return true;
@@ -79,6 +79,7 @@ AIN.loadProfileFromAccount=async()=>{
   const fields={
     '#level':profile.surf_level,
     '#board':profile.board_type,
+    '#board-ownership':profile.board_ownership,
     '#board-size':profile.board_size,
     '#wave-size':profile.wave_size,
     '#current-comfort':profile.current_comfort,
@@ -86,6 +87,7 @@ AIN.loadProfileFromAccount=async()=>{
     '#surf-frequency':profile.surf_frequency
   };
   Object.entries(fields).forEach(([selector,value])=>{const field=AIN.$(selector);if(field&&value&&[...field.options].some(option=>option.value===value))field.value=value});
+  AIN.updateBoardPreferences?.();
   AIN.renderProfile?.();
   if(AIN.$('#five-day'))AIN.renderBest?.();
 };

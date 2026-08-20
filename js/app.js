@@ -8,13 +8,29 @@ AIN.updateHeaderAuthState=AIN.updateHeaderAuthState||(()=>{
   button.classList.toggle('signed-in',signedIn);
 });
 AIN.updateHeaderAuthState();
-const levelField=AIN.$('#level'),boardField=AIN.$('#board'),boardSizeField=AIN.$('#board-size'),waveSizeField=AIN.$('#wave-size'),currentComfortField=AIN.$('#current-comfort'),frequencyField=AIN.$('#surf-frequency'),favoriteField=AIN.$('#favorite-spot'),profileForm=AIN.$('#profile-form');
-[levelField,boardField,boardSizeField,waveSizeField,currentComfortField,frequencyField,favoriteField].forEach(field=>{
+const levelField=AIN.$('#level'),boardField=AIN.$('#board'),boardOwnershipField=AIN.$('#board-ownership'),boardSizeField=AIN.$('#board-size'),waveSizeField=AIN.$('#wave-size'),currentComfortField=AIN.$('#current-comfort'),frequencyField=AIN.$('#surf-frequency'),favoriteField=AIN.$('#favorite-spot'),profileForm=AIN.$('#profile-form');
+try{
+  const saved=JSON.parse(localStorage.getItem('ain-profile')||'{}');
+  [['#level',saved.surf_level],['#board',saved.board_type],['#board-ownership',saved.board_ownership],['#board-size',saved.board_size],['#wave-size',saved.wave_size],['#current-comfort',saved.current_comfort],['#surf-frequency',saved.surf_frequency]].forEach(([selector,value])=>{
+    const field=AIN.$(selector);
+    if(field&&value&&[...field.options].some(option=>option.value===value))field.value=value;
+  });
+}catch(error){}
+AIN.updateBoardPreferences=()=>{
+  const ownsBoard=boardOwnershipField?.value!=='No board';
+  document.querySelectorAll('.board-dependent').forEach(label=>{
+    label.hidden=!ownsBoard;
+    label.querySelectorAll('select').forEach(field=>{field.disabled=!ownsBoard});
+  });
+};
+[levelField,boardField,boardOwnershipField,boardSizeField,waveSizeField,currentComfortField,frequencyField,favoriteField].forEach(field=>{
   if(field)field.addEventListener('change',AIN.renderProfile);
 });
+boardOwnershipField?.addEventListener('change',AIN.updateBoardPreferences);
+AIN.updateBoardPreferences();
 if(profileForm)profileForm.addEventListener('submit',async event=>{event.preventDefault();
   const preferences=AIN.profilePreferences?.();
-  if(preferences){try{localStorage.setItem('ain-profile',JSON.stringify({surf_level:preferences.level,board_type:preferences.boardType,board_size:preferences.boardSize,wave_size:preferences.waveSize,current_comfort:preferences.currentComfort,surf_frequency:preferences.frequency}))}catch(error){}}
+  if(preferences){try{localStorage.setItem('ain-profile',JSON.stringify({surf_level:preferences.level,board_type:preferences.boardType,board_ownership:preferences.boardOwnership,board_size:preferences.boardSize,wave_size:preferences.waveSize,current_comfort:preferences.currentComfort,surf_frequency:preferences.frequency}))}catch(error){}}
   AIN.renderProfile();
   try{const saved=await AIN.saveProfileToAccount?.();AIN.$('#save-profile').textContent=saved?'Profile saved':'Saved on this device · sign in to sync'}catch(error){AIN.$('#auth-status').textContent=error.message}
 });

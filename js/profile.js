@@ -16,6 +16,7 @@ AIN.profilePreferences=()=>{
   return {
     level:value('#level','surf_level','Beginner'),
     boardType:value('#board','board_type','Foam board'),
+    boardOwnership:value('#board-ownership','board_ownership','Own board'),
     boardSize:value('#board-size','board_size','6ft to 6ft6'),
     waveSize:value('#wave-size','wave_size','Waist to chest'),
     currentComfort:value('#current-comfort','current_comfort','Cautious'),
@@ -24,7 +25,7 @@ AIN.profilePreferences=()=>{
 };
 
 AIN.recommendationForDate=(date)=>{
-  const preferences=AIN.profilePreferences(), level=preferences.level, userRank=AIN.levelRank(level), [preferredLow,preferredHigh]=AIN.wavePreferenceRange(preferences.waveSize), currentLimit=AIN.currentComfortLimit(preferences.currentComfort);
+  const preferences=AIN.profilePreferences(), level=preferences.level, needsRental=preferences.boardOwnership==='No board', userRank=AIN.levelRank(level), [preferredLow,preferredHigh]=AIN.wavePreferenceRange(preferences.waveSize), currentLimit=AIN.currentComfortLimit(preferences.currentComfort);
   const scored=AIN.spots.map(spot=>{
     if(!spot.forecast?.time||!spot.weather)return null;
     const hours=spot.forecast.time.map((time,index)=>({time,index,hour:Number(time.slice(11,13))})).filter(item=>item.time.startsWith(date)&&item.hour>=6&&item.hour<=20);
@@ -32,35 +33,42 @@ AIN.recommendationForDate=(date)=>{
     const rolling=AIN.bestRollingWindow(hours,index=>AIN.scoreHour(spot,index,spot.forecast,spot.weather));
     const best={...hours.find(item=>item.index===rolling?.peakIndex)||hours[0],score:Math.round(rolling?.peak??0),window:AIN.formatWindow(rolling)};
     const c=AIN.conditionAt(spot,best.index,spot.forecast,spot.weather), wave=c.wave;
-    const waveMatch=wave>=preferredLow&&wave<=preferredHigh, boardMatch=AIN.boardFit(preferences.boardType,preferences.boardSize,wave), levelMatch=c.conditionRank<=userRank, currentMatch=c.currentSpeed<=currentLimit, frequencyMatch=preferences.frequency!=='First sessions'||c.conditionRank===1;
+    const waveMatch=wave>=preferredLow&&wave<=preferredHigh, boardMatch=needsRental||AIN.boardFit(preferences.boardType,preferences.boardSize,wave), equipmentMatch=!needsRental||spot.id==='pepsi', levelMatch=c.conditionRank<=userRank, currentMatch=c.currentSpeed<=currentLimit, frequencyMatch=preferences.frequency!=='First sessions'||c.conditionRank===1;
     const distance=wave<preferredLow?preferredLow-wave:wave>preferredHigh?wave-preferredHigh:0, waveFit=waveMatch?1:AIN.clamp(1-distance/1.2,0,1);
-    const fitScore=AIN.clamp(best.score*.55+waveFit*20+(boardMatch?15:0)+(levelMatch?10:0)+(currentMatch?10:0)+(frequencyMatch?5:-15),0,100);
-    return {spot,c,wave,waveMatch,boardMatch,levelMatch,currentMatch,frequencyMatch,fitScore,distance,index:best.index,score:Math.round(fitScore),window:best.window,preferences};
+    const equipmentScore=needsRental?(equipmentMatch?20:-20):0;
+    const fitScore=AIN.clamp(best.score*.55+waveFit*20+(boardMatch?15:0)+(levelMatch?10:0)+(currentMatch?10:0)+(frequencyMatch?5:-15)+equipmentScore,0,100);
+    return {spot,c,wave,waveMatch,boardMatch,equipmentMatch,levelMatch,currentMatch,frequencyMatch,fitScore,distance,index:best.index,score:Math.round(fitScore),window:best.window,preferences};
   }).filter(Boolean);
+  if(needsRental){
+    const anfa=scored.find(item=>item.spot.id==='pepsi');
+    if(anfa)return anfa;
+  }
   if(!scored.length)return null;
   const safe=scored.filter(item=>item.levelMatch&&item.currentMatch&&item.frequencyMatch), pool=safe.length?safe:scored;
   return pool.sort((a,b)=>b.fitScore-a.fitScore||a.distance-b.distance)[0];
 };
 
 AIN.renderProfile=()=>{
-  const preferences=AIN.profilePreferences(), level=preferences.level,boardType=preferences.boardType,boardSize=preferences.boardSize,waveSize=preferences.waveSize,currentComfort=preferences.currentComfort,frequency=preferences.frequency,board=boardSize?`${boardType} (${boardSize})`:boardType, userRank=AIN.levelRank(level), currentLimit=AIN.currentComfortLimit(currentComfort), [preferredLow,preferredHigh]=AIN.wavePreferenceRange(waveSize);
+  const preferences=AIN.profilePreferences(), level=preferences.level,boardType=preferences.boardType,boardOwnership=preferences.boardOwnership,needsRental=boardOwnership==='No board',boardSize=preferences.boardSize,waveSize=preferences.waveSize,currentComfort=preferences.currentComfort,frequency=preferences.frequency,board=boardSize?`${boardType} (${boardSize})`:boardType, userRank=AIN.levelRank(level), currentLimit=AIN.currentComfortLimit(currentComfort), [preferredLow,preferredHigh]=AIN.wavePreferenceRange(waveSize);
   const scored=AIN.spots.map(spot=>{
     const hasForecast=spot.forecast&&Number.isInteger(spot.bestIndex), c=hasForecast?AIN.conditionAt(spot,spot.bestIndex,spot.forecast,spot.weather):null, wave=c?.wave??null;
-    const waveMatch=wave===null||wave>=preferredLow&&wave<=preferredHigh, boardMatch=wave===null||AIN.boardFit(boardType,boardSize,wave), levelMatch=!c||c.conditionRank<=userRank, currentMatch=!c||c.currentSpeed<=currentLimit, frequencyMatch=!c||frequency!=='First sessions'||c.conditionRank===1;
+    const waveMatch=wave===null||wave>=preferredLow&&wave<=preferredHigh, boardMatch=needsRental||wave===null||AIN.boardFit(boardType,boardSize,wave), equipmentMatch=!needsRental||spot.id==='pepsi', levelMatch=!c||c.conditionRank<=userRank, currentMatch=!c||c.currentSpeed<=currentLimit, frequencyMatch=!c||frequency!=='First sessions'||c.conditionRank===1;
     const distance=wave===null?0:wave<preferredLow?preferredLow-wave:wave>preferredHigh?wave-preferredHigh:0;
     const waveFit=wave===null ? .5 : waveMatch ? 1 : AIN.clamp(1-distance/1.2,0,1);
-    const fitScore=hasForecast?AIN.clamp(spot.score*.55+waveFit*20+(boardMatch?15:0)+(levelMatch?10:0)+(currentMatch?10:0)+(frequencyMatch?5:-15),0,100):0;
-    return {spot,c,wave,waveMatch,boardMatch,levelMatch,currentMatch,frequencyMatch,fitScore,distance};
+    const equipmentScore=needsRental?(equipmentMatch?20:-20):0;
+    const fitScore=hasForecast?AIN.clamp(spot.score*.55+waveFit*20+(boardMatch?15:0)+(levelMatch?10:0)+(currentMatch?10:0)+(frequencyMatch?5:-15)+equipmentScore,0,100):0;
+    return {spot,c,wave,waveMatch,boardMatch,equipmentMatch,levelMatch,currentMatch,frequencyMatch,fitScore,distance};
   });
   // Prefer conditions that are safe for the surfer; only then use the score.
   const safe=scored.filter(item=>item.levelMatch&&item.currentMatch&&item.frequencyMatch), pool=safe.length?safe:scored;
   pool.sort((a,b)=>b.fitScore-a.fitScore||a.distance-b.distance);
-  const selected=pool[0]||{spot:AIN.spots[0],wave:null,waveMatch:false,boardMatch:false,levelMatch:false,currentMatch:false,frequencyMatch:false,fitScore:0}, spot=selected.spot, score=spot.forecast?Math.round(selected.fitScore):0, count=score>=88?5:score>=76?4:score>=62?3:score>=48?2:0;
+  const rentalPick=needsRental?scored.find(item=>item.spot.id==='pepsi'):null;
+  const selected=rentalPick||pool[0]||{spot:AIN.spots[0],wave:null,waveMatch:false,boardMatch:false,equipmentMatch:false,levelMatch:false,currentMatch:false,frequencyMatch:false,fitScore:0}, spot=selected.spot, score=spot.forecast?Math.round(selected.fitScore):0, count=score>=88?5:score>=76?4:score>=62?3:score>=48?2:0;
   AIN.lastRecommendation={...selected,score,preferences};
-  const stars='★'.repeat(count)+'☆'.repeat(5-count), breakdown=spot.forecast&&Number.isInteger(spot.bestIndex)?AIN.scoreBreakdown(spot,spot.bestIndex,spot.forecast,spot.weather):null, waveText=spot.wave==='--'?'Checking waves':spot.wave, windText=spot.wind==='--'?'Checking wind':spot.wind, match=selected.waveMatch&&selected.boardMatch&&selected.levelMatch&&selected.currentMatch&&selected.frequencyMatch;
+  const stars='★'.repeat(count)+'☆'.repeat(5-count), breakdown=spot.forecast&&Number.isInteger(spot.bestIndex)?AIN.scoreBreakdown(spot,spot.bestIndex,spot.forecast,spot.weather):null, waveText=spot.wave==='--'?'Checking waves':spot.wave, windText=spot.wind==='--'?'Checking wind':spot.wind, match=selected.waveMatch&&selected.boardMatch&&selected.equipmentMatch&&selected.levelMatch&&selected.currentMatch&&selected.frequencyMatch;
   const wavePreference=waveSize.replace('Glide: ','');
   const waveBullet=selected.wave===null?`Waiting for live wave data (${wavePreference})`:selected.waveMatch?`${wavePreference} waves match your preference`:`Wave mismatch: ${selected.wave.toFixed(1)} m now; you asked for ${wavePreference}`;
-  const boardBullet=selected.boardMatch?`Fits your ${board}`:`Board mismatch: ${board} is not ideal for ${selected.wave?.toFixed(1)||'these'} m waves`;
+  const boardBullet=needsRental?(selected.equipmentMatch?'Board rental available at Anfa Place':'No board rental shown for this spot'):(selected.boardMatch?`Fits your ${board}`:`Board mismatch: ${board} is not ideal for ${selected.wave?.toFixed(1)||'these'} m waves`);
   const levelBullet=!selected.frequencyMatch?`Your ${frequency.toLowerCase()} profile is better suited to smaller, calmer sessions`:selected.levelMatch?`${selected.c?.skillLabel||'Conditions'} for your ${level} level`:`Conditions are ${selected.c?.skillLabel?.toLowerCase()||'above'} your ${level} level today`;
   const currentLabel=selected.c ? AIN.currentLabel(selected.c.currentSpeed) : 'Current indisponible';
   const currentBullet=selected.currentMatch?`${currentLabel} · within your ${currentComfort.toLowerCase()} limit`:`${currentLabel} · above your ${currentComfort.toLowerCase()} limit`;

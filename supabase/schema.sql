@@ -3,6 +3,7 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   surf_level text,
   board_type text,
+  board_ownership text,
   board_size text,
   wave_size text,
   current_comfort text,
@@ -10,6 +11,8 @@ create table if not exists public.profiles (
   surf_frequency text,
   updated_at timestamptz default now()
 );
+
+alter table public.profiles add column if not exists board_ownership text;
 
 alter table public.profiles enable row level security;
 
