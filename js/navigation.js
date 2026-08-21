@@ -1,6 +1,6 @@
 AIN.showPage = name => {
   const target=AIN.$(`#${name}-page`);
-  if(!target){window.location.href=name==='spots'?'spots.html':name==='profile'?'profile.html':'index.html';return}
+  if(!target){window.location.href=name==='spots'?'spots.html':name==='profile'?'profile.html':'./';return}
   document.querySelectorAll('.page').forEach(page=>page.classList.remove('active-page'));
   target.classList.add('active-page');
   document.querySelectorAll('nav a').forEach(link=>link.classList.toggle('active',link.getAttribute('href')===`${name==='home'?'index':name}.html`));
