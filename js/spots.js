@@ -104,7 +104,7 @@ AIN.renderSpots = () => {
     school.querySelector('.school-location')?.remove();
     const photo=document.createElement('img');
     photo.className='school-photo';
-    photo.src='images/anfa surf school rip.jpg';
+    photo.src='images/anfa-surf-school-rip.jpg';
     photo.alt='Anfa Surf School à Anfaplace';
     photo.loading='lazy';
     const preview=document.createElement('div');
