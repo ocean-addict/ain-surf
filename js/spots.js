@@ -48,6 +48,7 @@ AIN.spotDetail = spot => {
   const currentSource = spot.currentSource || 'Estimation des prévisions';
   const suitability = spot.skillLabel || spot.level;
   const tideSource = AIN.tides ? 'Modèle harmonique de Casablanca' : 'Approximation Open-Meteo';
+  const bathymetry=spot.bathymetry;
 
   return `
     <div class="detail-head">
@@ -63,6 +64,7 @@ AIN.spotDetail = spot => {
       ${AIN.metric('Tide modélisée',AIN.tideMarkup(displayedTide.state),`${Number.isFinite(displayedTide.height) ? displayedTide.height.toFixed(2)+' m' : 'Estimation du modèle'} · ${tideSource}`)}
       ${AIN.metric('Wind · moyen',spot.wind,`Rafales ${gust} km/h · sur le meilleur créneau`)}
       ${AIN.metric('Courant',current,currentSource)}
+      ${AIN.metric('Bathymétrie',bathymetry ? `${bathymetry.surfZoneDepth.toFixed(1)} m` : 'Indisponible',bathymetry ? `${bathymetry.bottom} · pente ${(bathymetry.slope*100).toFixed(1)}%` : 'Aucune donnée')}
       ${AIN.metric('Meilleur créneau',spot.window,'Aujourd’hui')}
     </div>
     <div class="chart">
@@ -77,6 +79,7 @@ AIN.spotDetail = spot => {
       <div><small>TODAY'S SUITABILITY</small><b>${suitability}</b></div>
       <div><small>USUAL CROWD</small><b>${spot.crowd}</b></div>
       <div><small>DANGER BASELINE</small><b>${spot.danger}</b></div>
+      <div><small>BATHY SOURCE</small><b>${bathymetry?.confidence||'Indisponible'}</b></div>
     </div>
     <div class="local-note large"><span>⌁</span><p><strong>Note locale</strong>${spot.note}</p></div>
     <section class="spot-why"><span class="eyebrow">DÉCISION AIN</span><h3>Pourquoi ce spot aujourd’hui&nbsp;?</h3><ul class="why-list">${breakdown ? `<li class="${breakdown.conditions.windSpeed <= 15 ? 'positive' : 'caution'}">${breakdown.conditions.windSpeed <= 15 ? '✓ Vent léger' : '△ Vent à surveiller'} · ${Math.round(breakdown.conditions.windSpeed)} km/h, rafales ${gust} km/h</li><li class="${breakdown.conditions.period >= 8 ? 'positive' : 'caution'}">${breakdown.conditions.period >= 8 ? '✓ Période suffisante' : '△ Période courte'} · ${Math.round(breakdown.conditions.period)}s</li><li class="${breakdown.wave >= 20 ? 'positive' : 'caution'}">${breakdown.wave >= 20 ? '✓ Taille cohérente' : '△ Taille moins adaptée'} · ${spot.wave}</li><li class="${breakdown.conditions.currentSpeed <= (spot.currentTolerance || .35) ? 'positive' : 'caution'}">${breakdown.conditions.currentSpeed <= (spot.currentTolerance || .35) ? '✓ Courant dans la limite du spot' : '△ Courant à surveiller'} · ${breakdown.conditions.currentSource}</li>` : '<li>Analyse en cours dès que les prévisions sont disponibles.</li>'}</ul></section>

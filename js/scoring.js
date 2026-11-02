@@ -14,6 +14,7 @@ AIN.conditionAt = (spot,index,marine,weather) => {
   const specialized=date && AIN.tides?.heights?.length ? AIN.tideAt(date,hour) : null;
   const tideState=specialized?.state || AIN.tideState(marine.sea_level_height_msl || [],index);
   const tideHeight=specialized?.height ?? marine.sea_level_height_msl?.[index];
+  const bathymetry=AIN.bathymetryCondition(spot,wave,tideHeight);
   const measuredCurrent=marine.ocean_current_velocity?.[index];
   const hasMeasuredCurrent=Number.isFinite(measuredCurrent);
   const previous=marine.sea_level_height_msl?.[Math.max(0,index-1)], next=marine.sea_level_height_msl?.[Math.min((marine.sea_level_height_msl?.length||1)-1,index+1)];
@@ -30,16 +31,26 @@ AIN.conditionAt = (spot,index,marine,weather) => {
   if(wave>1.6 || windGust>32 || period>=14 || currentSpeed>currentLimit*1.5 || spot.danger==='High' || (onshore && windSpeed>23) || (shorebreakPenalty && (wave>1.25 || windSpeed>22)))conditionRank=3;
   const defaultLabel=['','Beginner-friendly','Intermediate','Advanced only'][conditionRank];
   const skillLabel=conditionRank===2 && spot.intermediateLabel ? spot.intermediateLabel : defaultLabel;
-  return {wave,period,swellDirection,windSpeed,windGust,windDirection,tideState,tideHeight,currentSpeed,currentSource,conditionRank,skillLabel,hour,date};
+  return {wave,period,swellDirection,windSpeed,windGust,windDirection,tideState,tideHeight,currentSpeed,currentSource,bathymetry,conditionRank,skillLabel,hour,date};
 };
 
 AIN.levelRank = level => level?.startsWith('Beginner') ? 1 : level?.startsWith('Intermediate') ? 2 : 3;
 AIN.currentComfortLimit = comfort => ({Cautious:.25,Comfortable:.45,'Very comfortable':.9,'Strong currents okay':.9}[comfort] ?? .25);
 AIN.currentLabel = speed => speed <= .2 ? 'Current calme' : speed <= .35 ? 'Current modérée' : speed <= .55 ? 'Current forte' : 'Current très forte';
 
+AIN.bathymetryCondition = (spot,wave,tideHeight) => {
+  const profile=spot.bathymetry;
+  if(!profile)return {available:false,depth:null,ratio:null,penalty:0,label:'Indisponible'};
+  const depth=profile.surfZoneDepth + (Number.isFinite(tideHeight) ? tideHeight*.12 : 0);
+  const ratio=depth>0 ? wave/depth : 0;
+  const penalty=AIN.clamp((ratio-.65)*8,0,5);
+  const label=ratio>.95?'Shorebreak renforcé':ratio>.75?'Déferlement marqué':'Profil cohérent';
+  return {available:true,depth,ratio,penalty,label,source:'Profil local à valider · Copernicus/EMODnet en référence'};
+};
+
 AIN.scoreBreakdown = (spot,index,marine,weather) => {
   const c=AIN.conditionAt(spot,index,marine,weather), [low,high]=spot.ideal, center=(low+high)/2;
-  const waveScore=c.wave>=low&&c.wave<=high?30:AIN.clamp(30-Math.abs(c.wave-center)*28,0,30);
+  const waveScore=AIN.clamp((c.wave>=low&&c.wave<=high?30:30-Math.abs(c.wave-center)*28)-c.bathymetry.penalty,0,30);
   const periodScore=AIN.clamp((c.period-5)*2.14,0,15);
   const directionScore=AIN.clamp(15-AIN.angleDiff(c.swellDirection,spot.swellTarget)/6,0,15);
   const gustPenalty=Math.max(0,c.windGust-c.windSpeed)*.35;
@@ -50,7 +61,7 @@ AIN.scoreBreakdown = (spot,index,marine,weather) => {
   const currentScore=AIN.clamp(10-c.currentSpeed*12,0,10);
   const shorebreakPenalty=spot.shorebreakRisk && c.tideState==='Rising' ? AIN.clamp(spot.shorebreakRisk*4,0,4) : 0;
   const total=Math.round(AIN.clamp(waveScore+periodScore+directionScore+windScore+tideScore+currentScore-shorebreakPenalty,0,100));
-  return {total,wave:Math.round(waveScore),wind:Math.round(windScore),swell:Math.round(periodScore+directionScore),tide:tideScore,current:Math.round(currentScore),conditions:c};
+  return {total,wave:Math.round(waveScore),wind:Math.round(windScore),swell:Math.round(periodScore+directionScore),tide:tideScore,current:Math.round(currentScore),bathymetry:Math.round(c.bathymetry.penalty),conditions:c};
 };
 
 AIN.scoreHour=(spot,index,marine,weather)=>AIN.scoreBreakdown(spot,index,marine,weather).total;
